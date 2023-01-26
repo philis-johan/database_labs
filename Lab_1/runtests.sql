@@ -36,3 +36,11 @@ SELECT student, totalCredits, mandatoryLeft, mathCredits, researchCredits, semin
 
 
 -- Life-hack: When working on a new view you can write it as a query here (without creating a view) and when it works just add CREATE VIEW and put it in views.sql
+
+-- SELECT idnr, name, login, Students.program, branch FROM Students 
+-- LEFT OUTER JOIN StudentBranches ON Students.course = StudentBranches.student;
+
+
+-- SELECT student, course, grade, Courses.credits as credits FROM Taken LEFT OUTER JOIN Courses ON Taken.course = Courses.code
+
+SELECT student, course FROM Registered JOIN WaitingList ON TRUE = TRUE; 
