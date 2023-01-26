@@ -1,6 +1,6 @@
 INSERT INTO Branches VALUES ('B1','Prog1');
 INSERT INTO Branches VALUES ('B2','Prog1');
---INSERT INTO Branches VALUES ('B1','Prog2');
+INSERT INTO Branches VALUES ('B1','Prog2');
 
 INSERT INTO Students VALUES ('1111111111','N1','ls1','Prog1');
 INSERT INTO Students VALUES ('2222222222','N2','ls2','Prog1');
