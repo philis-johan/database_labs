@@ -17,10 +17,27 @@ CREATE OR REPLACE VIEW PassedCourses AS (
     SELECT student, course, credits FROM FinishedCourses WHERE grade != 'U'
 );
 
--- CREATE OR REPLACE VIEW Registrations AS (
---     SELECT student, course, credits FROM FinishedCourses WHERE grade != 'U'
+
+CREATE OR REPLACE VIEW Registrations AS(
+    (SELECT student, course, 'registered' AS status FROM Registered) UNION
+    (SELECT student, course, 'waiting' AS status FROM WaitingList)
+);
+
+CREATE OR REPLACE VIEW UnreadMandatory AS (
+    SELECT Students.idnr AS student, MandatoryProgram.course FROM Students
+    LEFT JOIN MandatoryProgram ON Students.program = MandatoryProgram.program
+    UNION
+    SELECT student, MandatoryBranch.course FROM StudentBranches
+    LEFT JOIN MandatoryBranch ON StudentBranches.branch = MandatoryBranch.branch
+    EXCEPT 
+    SELECT student, course FROM PassedCourses
+);
+
+-- CREATE OR REPLACE VIEW PathToGraduation AS(
+--     (SELECT student, course, 'registered' AS status FROM Registered) UNION
+--     (SELECT student, course, 'waiting' AS status FROM WaitingList)
 -- );
 
--- CREATE OR REPLACE VIEW PassedCourses AS (
---     SELECT student, course, credits FROM FinishedCourses WHERE grade != 'U'
--- );
+
+SELECT student, totalCredits, mandatoryLeft, mathCredits, researchCredits, seminarCourses, qualified
+FROM Students JOIN UnreadMandatory.........................

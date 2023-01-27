@@ -43,4 +43,4 @@ SELECT student, totalCredits, mandatoryLeft, mathCredits, researchCredits, semin
 
 -- SELECT student, course, grade, Courses.credits as credits FROM Taken LEFT OUTER JOIN Courses ON Taken.course = Courses.code
 
-SELECT student, course FROM Registered JOIN WaitingList ON TRUE = TRUE; 
+
