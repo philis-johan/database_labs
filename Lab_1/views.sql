@@ -25,10 +25,10 @@ CREATE OR REPLACE VIEW Registrations AS(
 
 CREATE OR REPLACE VIEW UnreadMandatory AS (
     SELECT Students.idnr AS student, MandatoryProgram.course FROM Students
-    LEFT JOIN MandatoryProgram ON Students.program = MandatoryProgram.program
+    INNER JOIN MandatoryProgram ON Students.program = MandatoryProgram.program
     UNION
     SELECT student, MandatoryBranch.course FROM StudentBranches
-    LEFT JOIN MandatoryBranch ON StudentBranches.branch = MandatoryBranch.branch
+    INNER JOIN MandatoryBranch ON StudentBranches.branch = MandatoryBranch.branch
     EXCEPT 
     SELECT student, course FROM PassedCourses
 );
@@ -39,5 +39,24 @@ CREATE OR REPLACE VIEW UnreadMandatory AS (
 -- );
 
 
-SELECT student, totalCredits, mandatoryLeft, mathCredits, researchCredits, seminarCourses, qualified
-FROM Students JOIN UnreadMandatory.........................
+SELECT Students.idnr, COALESCE(SUM(PassedCourses.credits), 0) AS totalCredits 
+FROM PassedCourses RIGHT JOIN Students ON Students.idnr = PassedCourses.student
+GROUP BY PassedCourses.student, Students.idnr
+;
+
+SELECT Students.idnr, COUNT(*) AS mandatoryLeft 
+FROM UnreadMandatory RIGHT JOIN Students ON Students.idnr = UnreadMandatory.student
+GROUP BY UnreadMandatory.student, Students.idnr
+;
+
+
+SELECT t1.student, t1.totalCredits, t2.mandatoryLeft FROM
+(SELECT Students.idnr as student, COALESCE(SUM(PassedCourses.credits), 0) AS totalCredits 
+FROM PassedCourses RIGHT JOIN Students ON Students.idnr = PassedCourses.student
+GROUP BY PassedCourses.student, Students.idnr) t1
+FULL JOIN
+(SELECT Students.idnr AS student, COUNT(*) AS mandatoryLeft 
+FROM UnreadMandatory RIGHT JOIN Students ON Students.idnr = UnreadMandatory.student
+GROUP BY UnreadMandatory.student, Students.idnr) t2
+ON t1.student = t2.student
+;
