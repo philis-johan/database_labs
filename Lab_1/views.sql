@@ -39,50 +39,28 @@ CREATE OR REPLACE VIEW UnreadMandatory AS (
 --     (SELECT student, course, 'waiting' AS status FROM WaitingList)
 -- );
 
-
--- SELECT Students.idnr, COALESCE(SUM(PassedCourses.credits), 0) AS totalCredits 
--- FROM PassedCourses RIGHT JOIN Students ON Students.idnr = PassedCourses.student
--- GROUP BY PassedCourses.student, Students.idnr
--- ;
-
--- SELECT Students.idnr, COALESCE(COUNT(*), 0) AS mandatoryLeft 
--- FROM UnreadMandatory INNER JOIN Students ON Students.idnr = UnreadMandatory.student
--- GROUP BY UnreadMandatory.student, Students.idnr
--- ;
-
--- SELECT Students.idnr, UnreadMandatory.course AS mandatoryLeft 
--- FROM UnreadMandatory RIGHT JOIN Students ON Students.idnr = UnreadMandatory.student
--- ;
-
--- SELECT Students.idnr, COUNT(*) AS mandatoryLeft 
--- FROM UnreadMandatory INNER JOIN Students ON Students.idnr = UnreadMandatory.student
--- GROUP BY UnreadMandatory.student, Students.idnr
--- ;
-
--- (SELECT Students.idnr as student, COALESCE(SUM(PassedCourses.credits), 0) AS totalCredits 
--- FROM PassedCourses RIGHT JOIN Students ON Students.idnr = PassedCourses.student) t3
--- LEFT JOIN Classified ON Classified.classification = 'math' AND Classified.course = 
--- GROUP BY PassedCourses.student, Students.idnr);
-
-SELECT 
-(SELECT PassedCourses.student, PassedCourses.course, Classified.classification FROM PassedCourses
-INNER JOIN Classified ON Classified.course = PassedCourses.course AND Classified.classification = 'math') t3
-;
+-- draft
+(SELECT Students.idnr, COALESCE(SUM(t31.mathCredits), 0) AS mathCredits FROM Students
+FULL JOIN 
+(SELECT PassedCourses.student as student, PassedCourses.course as course, PassedCourses.credits as mathCredits
+FROM PassedCourses
+INNER JOIN Classified ON Classified.course = PassedCourses.course AND Classified.classification = 'math') t31
+ON t31.student = Students.idnr
+GROUP BY t31.student, Students.idnr)
 
 
+---
 SELECT t1.student, t1.totalCredits, COALESCE(t2.mandatoryLeft, 0) FROM
+
 (SELECT Students.idnr as student, COALESCE(SUM(PassedCourses.credits), 0) AS totalCredits 
 FROM PassedCourses RIGHT JOIN Students ON Students.idnr = PassedCourses.student
 GROUP BY PassedCourses.student, Students.idnr) t1
 FULL JOIN
+
+SELECT 
 (SELECT Students.idnr AS student, COUNT(*) AS mandatoryLeft 
 FROM UnreadMandatory INNER JOIN Students ON Students.idnr = UnreadMandatory.student
 GROUP BY UnreadMandatory.student, Students.idnr) t2
 ON t1.student = t2.student
-FULL JOIN
-(SELECT PassedCourses.student, COALESCE(SUM(PassedCourses.credits), 0) AS mathCredits 
-FROM Classified WHERE Classified.classification = 'math'
-LEFT JOIN PassedCourses ON Classified.course = PassedCourses.course
-GROUP BY PassedCourses.student)
-
 ;
+---
