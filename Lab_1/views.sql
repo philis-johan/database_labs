@@ -43,7 +43,7 @@ CREATE OR REPLACE VIEW UnreadMandatory AS (
 
 --- main
 SELECT t1.student, t1.totalCredits, COALESCE(t2.mandatoryLeft, 0) as mandatoryLeft, t3.mathCredits, t4.researchCredits, 
-COALESCE(t5.seminarCourses, 0) as seminarCourses, COALESCE(t6.qualified, 't') as qualified FROM
+COALESCE(t5.seminarCourses, 0) as seminarCourses, COALESCE(t6.qualified, 't') as qualified, t7.recommendedCredits as recommendedCredits FROM
 
 (SELECT Students.idnr as student, COALESCE(SUM(PassedCourses.credits), 0) AS totalCredits 
 FROM PassedCourses RIGHT JOIN Students ON Students.idnr = PassedCourses.student
@@ -86,17 +86,31 @@ GROUP BY t51.student, Students.idnr) t5
 ON t1.student = t5.student
 LEFT JOIN
 
-(SELECT students.idnr as student, 'f' as qualified FROM Students) t6
-ON t1.student = t6.student AND (t2.mandatoryLeft != 0 OR t3.mathCredits < 20 OR t4.researchCredits < 10 OR t5.seminarCourses = 0)
-;
+(SELECT Students.idnr as student, COALESCE(SUM(t72.recommendedCredits), 0) as recommendedCredits 
+FROM Students LEFT JOIN
+(SELECT PassedCourses.student as student, t71.course as course, PassedCourses.credits as recommendedCredits FROM PassedCourses
+INNER JOIN
+(SELECT StudentBranches.student as student, RecommendedBranch.course as course FROM StudentBranches
+INNER JOIN RecommendedBranch 
+ON StudentBranches.program = RecommendedBranch.program AND StudentBranches.branch = RecommendedBranch.branch) t71
+ON PassedCourses.course = t71.course AND PassedCourses.student = t71.student) t72
+ON Students.idnr = t72.student
+GROUP BY Students.idnr, t72.student) t7
+ON t1.student = t7.student
+LEFT JOIN
 
+
+(SELECT students.idnr as student, 'f' as qualified FROM Students) t6
+ON t1.student = t6.student AND (t2.mandatoryLeft != 0 OR t3.mathCredits < 20 OR t4.researchCredits < 10 OR t5.seminarCourses = 0
+OR t7.recommendedCredits < 10)
+;
 --- 
 
 -- draft
-SELECT PassedCourses.student as student, PassedCourses.course, PassedCourses.credits as recommendedCredits FROM PassedCourses
-LEFT JOIN
+SELECT PassedCourses.student as student, t61.course as course, PassedCourses.credits as recommendedCredits FROM PassedCourses
+INNER JOIN
 (SELECT StudentBranches.student as student, RecommendedBranch.course as course FROM StudentBranches
 INNER JOIN RecommendedBranch 
 ON StudentBranches.program = RecommendedBranch.program AND StudentBranches.branch = RecommendedBranch.branch) t61
-ON PassedCourses.course = t61.course
+ON PassedCourses.course = t61.course AND PassedCourses.student = t61.student
 ;
