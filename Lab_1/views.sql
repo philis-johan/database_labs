@@ -93,8 +93,10 @@ ON t1.student = t6.student AND (t2.mandatoryLeft != 0 OR t3.mathCredits < 20 OR 
 --- 
 
 -- draft
-SELECT * FROM
-(SELECT StudentBranches.student, RecommendedBranch.course FROM StudentBranches
+SELECT PassedCourses.student as student, PassedCourses.course, PassedCourses.credits as recommendedCredits FROM PassedCourses
+LEFT JOIN
+(SELECT StudentBranches.student as student, RecommendedBranch.course as course FROM StudentBranches
 INNER JOIN RecommendedBranch 
-ON StudentBranches.program = RecommendedBranch.program AND StudentBranches.branch = RecommendedBranch.branch)
+ON StudentBranches.program = RecommendedBranch.program AND StudentBranches.branch = RecommendedBranch.branch) t61
+ON PassedCourses.course = t61.course
 ;
