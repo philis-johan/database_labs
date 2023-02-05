@@ -28,8 +28,8 @@ CREATE OR REPLACE VIEW UnreadMandatory AS (
     INNER JOIN MandatoryProgram ON Students.program = MandatoryProgram.program
     UNION
     SELECT student, MandatoryBranch.course FROM StudentBranches
-    INNER JOIN MandatoryBranch ON StudentBranches.program = MandatoryBranch.program
-    AND StudentBranches.branch = MandatoryBranch.branch
+    INNER JOIN MandatoryBranch 
+    ON StudentBranches.program = MandatoryBranch.program AND StudentBranches.branch = MandatoryBranch.branch
     EXCEPT 
     SELECT student, course FROM PassedCourses
 );
@@ -39,28 +39,62 @@ CREATE OR REPLACE VIEW UnreadMandatory AS (
 --     (SELECT student, course, 'waiting' AS status FROM WaitingList)
 -- );
 
--- draft
-(SELECT Students.idnr, COALESCE(SUM(t31.mathCredits), 0) AS mathCredits FROM Students
+
+
+--- main
+SELECT t1.student, t1.totalCredits, COALESCE(t2.mandatoryLeft, 0) as mandatoryLeft, t3.mathCredits, t4.researchCredits, 
+COALESCE(t5.seminarCourses, 0) as seminarCourses, COALESCE(t6.qualified, 't') as qualified FROM
+
+(SELECT Students.idnr as student, COALESCE(SUM(PassedCourses.credits), 0) AS totalCredits 
+FROM PassedCourses RIGHT JOIN Students ON Students.idnr = PassedCourses.student
+GROUP BY PassedCourses.student, Students.idnr) t1
+LEFT JOIN
+
+(SELECT Students.idnr AS student, COUNT(*) AS mandatoryLeft 
+FROM UnreadMandatory INNER JOIN Students ON Students.idnr = UnreadMandatory.student
+GROUP BY UnreadMandatory.student, Students.idnr) t2
+ON t1.student = t2.student
+LEFT JOIN
+
+(SELECT Students.idnr as student, COALESCE(SUM(t31.mathCredits), 0) AS mathCredits FROM Students
 FULL JOIN 
 (SELECT PassedCourses.student as student, PassedCourses.course as course, PassedCourses.credits as mathCredits
 FROM PassedCourses
 INNER JOIN Classified ON Classified.course = PassedCourses.course AND Classified.classification = 'math') t31
 ON t31.student = Students.idnr
-GROUP BY t31.student, Students.idnr)
+GROUP BY t31.student, Students.idnr) t3
+ON t1.student = t3.student
+LEFT JOIN
 
+(SELECT Students.idnr as student, COALESCE(SUM(t41.researchCredits), 0) AS researchCredits FROM Students
+FULL JOIN 
+(SELECT PassedCourses.student as student, PassedCourses.course as course, PassedCourses.credits as researchCredits
+FROM PassedCourses
+INNER JOIN Classified ON Classified.course = PassedCourses.course AND Classified.classification = 'research') t41
+ON t41.student = Students.idnr
+GROUP BY t41.student, Students.idnr) t4
+ON t1.student = t4.student
+LEFT JOIN
 
----
-SELECT t1.student, t1.totalCredits, COALESCE(t2.mandatoryLeft, 0) FROM
+(SELECT Students.idnr as student, Count(*) AS seminarCourses FROM Students
+INNER JOIN 
+(SELECT PassedCourses.student as student, PassedCourses.course as course, PassedCourses.credits as seminarCourses
+FROM PassedCourses
+INNER JOIN Classified ON Classified.course = PassedCourses.course AND Classified.classification = 'seminar') t51
+ON t51.student = Students.idnr
+GROUP BY t51.student, Students.idnr) t5
+ON t1.student = t5.student
+LEFT JOIN
 
-(SELECT Students.idnr as student, COALESCE(SUM(PassedCourses.credits), 0) AS totalCredits 
-FROM PassedCourses RIGHT JOIN Students ON Students.idnr = PassedCourses.student
-GROUP BY PassedCourses.student, Students.idnr) t1
-FULL JOIN
-
-SELECT 
-(SELECT Students.idnr AS student, COUNT(*) AS mandatoryLeft 
-FROM UnreadMandatory INNER JOIN Students ON Students.idnr = UnreadMandatory.student
-GROUP BY UnreadMandatory.student, Students.idnr) t2
-ON t1.student = t2.student
+(SELECT students.idnr as student, 'f' as qualified FROM Students) t6
+ON t1.student = t6.student AND (t2.mandatoryLeft != 0 OR t3.mathCredits < 20 OR t4.researchCredits < 10 OR t5.seminarCourses = 0)
 ;
----
+
+--- 
+
+-- draft
+SELECT * FROM
+(SELECT StudentBranches.student, RecommendedBranch.course FROM StudentBranches
+INNER JOIN RecommendedBranch 
+ON StudentBranches.program = RecommendedBranch.program AND StudentBranches.branch = RecommendedBranch.branch)
+;
