@@ -18,17 +18,17 @@ CREATE TABLE Branches(
 
 DROP TABLE IF EXISTS Courses CASCADE;
 CREATE TABLE Courses(
-    code TEXT PRIMARY KEY,
+    code CHAR(6) PRIMARY KEY,
     name TEXT NOT NULL,
-    credits FLOAT NOT NULL,
+    credits FLOAT NOT NULL CHECK (credits >= 0),
     department TEXT NOT NULL
     );
 
 
 DROP TABLE IF EXISTS LimitedCourses CASCADE;
 CREATE TABLE LimitedCourses(
-    code TEXT PRIMARY KEY,
-    capacity FLOAT NOT NULL,
+    code CHAR(6) PRIMARY KEY,
+    capacity FLOAT NOT NULL CHECK (capacity >= 0),
     FOREIGN KEY (code) REFERENCES Courses(code)
     );
 
@@ -48,7 +48,7 @@ CREATE TABLE Classifications(
     
 DROP TABLE IF EXISTS Classified CASCADE;
 CREATE TABLE Classified(
-    course TEXT NOT NULL,
+    course CHAR(6) NOT NULL,
     classification TEXT NOT NULL,
     FOREIGN KEY (course) REFERENCES Courses(code),
     FOREIGN KEY (classification) REFERENCES Classifications(name),
@@ -57,7 +57,7 @@ CREATE TABLE Classified(
 
 DROP TABLE IF EXISTS MandatoryProgram CASCADE;
 CREATE TABLE MandatoryProgram(
-    course TEXT NOT NULL,
+    course CHAR(6) NOT NULL,
     program TEXT NOT NULL,
     FOREIGN KEY (course) REFERENCES Courses(code),
     PRIMARY KEY (course, program)
@@ -65,7 +65,7 @@ CREATE TABLE MandatoryProgram(
 
 DROP TABLE IF EXISTS MandatoryBranch CASCADE;
 CREATE TABLE MandatoryBranch(
-    course TEXT NOT NULL,
+    course CHAR(6) NOT NULL,
     branch TEXT NOT NULL,
     program TEXT NOT NULL,
     FOREIGN KEY (branch, program) REFERENCES Branches(name, program),
@@ -75,7 +75,7 @@ CREATE TABLE MandatoryBranch(
 
 DROP TABLE IF EXISTS RecommendedBranch CASCADE;
 CREATE TABLE RecommendedBranch(
-    course TEXT NOT NULL,
+    course CHAR(6) NOT NULL,
     branch TEXT NOT NULL,
     program TEXT NOT NULL,
     FOREIGN KEY (branch, program) REFERENCES Branches(name, program),
@@ -85,8 +85,8 @@ CREATE TABLE RecommendedBranch(
 
 DROP TABLE IF EXISTS Registered CASCADE;
 CREATE TABLE Registered(
-    student TEXT NOT NULL,
-    course TEXT NOT NULL,
+    student CHAR(10) NOT NULL,
+    course CHAR(6) NOT NULL,
     FOREIGN KEY (student) REFERENCES Students(idnr),
     FOREIGN KEY (course) REFERENCES Courses(code),
     PRIMARY KEY (student, course)
@@ -94,8 +94,8 @@ CREATE TABLE Registered(
 
 DROP TABLE IF EXISTS Taken CASCADE;
 CREATE TABLE Taken(
-    student TEXT NOT NULL,
-    course TEXT NOT NULL,
+    student CHAR(10) NOT NULL,
+    course CHAR(6) NOT NULL,
     grade CHAR(1) NOT NULL,
     CONSTRAINT ok_grade CHECK(grade IN ('U','3','4','5')),
     FOREIGN KEY (student) REFERENCES Students(idnr),
@@ -105,8 +105,8 @@ CREATE TABLE Taken(
 
 DROP TABLE IF EXISTS WaitingList CASCADE;
 CREATE TABLE WaitingList(
-    student TEXT NOT NULL,
-    course TEXT NOT NULL,
+    student CHAR(10) NOT NULL,
+    course CHAR(6) NOT NULL,
     position SERIAL NOT NULL,
     FOREIGN KEY (student) REFERENCES Students(idnr),
     FOREIGN KEY (course) REFERENCES LimitedCourses(code),
