@@ -2,7 +2,6 @@
 
 ## Domain description
 ### Departments and programs
-* different departments and programs
 * some departments are co-hosts of programs
 * department names and abbreviations (shortenings) are UNIQUE
 * program names are unique, not necessarily abbreviations

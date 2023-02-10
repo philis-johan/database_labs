@@ -6,10 +6,15 @@ Students(_idnr_, name, login, program)
 Branches(_name_, _program_)
     program -> programs.name
 
+Departments(_name_, abbreviation)
+
 Courses(_code_, name, credits, department)
+    department -> Departments.name
 
 LimitedCourses(_code_, capacity)
  code → Courses.code
+
+Programs(_name_, abbreviation)
 
 StudentBranches(_student_, branch, program)
  student → Students.idnr
@@ -20,6 +25,10 @@ Classifications(_name_)
 Classified(_course_, classification)
  course → courses.code
  classification → Classifications.name)
+
+ DepartmentProgram(_department_, _program_)
+    department -> Departments.name
+    program -> Programs.name
 
 MandatoryProgram(_course_, _program_)
  course → Courses.code
@@ -42,4 +51,8 @@ Taken(_student_, _course_, grade)
 
 WaitingList(_student_, _course_, position)
  student → Students.idnr
- course → Limitedcourses.code 
+ course → Limitedcourses.code
+
+ Prerequisites(_prereqCourse_, _targetCourse_)
+    _prereqCourse_ -> Courses.code
+    _targetCourse_ -> Courses.code
