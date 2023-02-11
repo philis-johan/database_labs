@@ -1,0 +1,10 @@
+
+Courses(_courseCode_, courseName, credits, departmentName, capacity)
+
+Students(_studentIdnr_, studentName, login, programName, branchName)
+
+Relation1(_studentIdnr_, _courseCode_, grade, position)
+
+CourseClassifications(_courseCode_, _classification_)
+
+Relation2(studentIdnr, courseCode)

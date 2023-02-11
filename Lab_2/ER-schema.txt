@@ -26,7 +26,7 @@ Classified(_course_, classification)
  course → courses.code
  classification → Classifications.name)
 
- DepartmentProgram(_department_, _program_)
+DepartmentProgram(_department_, _program_)
     department -> Departments.name
     program -> Programs.name
 
@@ -53,6 +53,6 @@ WaitingList(_student_, _course_, position)
  student → Students.idnr
  course → Limitedcourses.code
 
- Prerequisites(_prereqCourse_, _targetCourse_)
-    _prereqCourse_ -> Courses.code
-    _targetCourse_ -> Courses.code
+Prerequisites(_prereqCourse_, _targetCourse_)
+_prereqCourse_ -> Courses.code
+_targetCourse_ -> Courses.code

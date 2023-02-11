@@ -2,9 +2,64 @@ Functional Dependencies
 Domain: D(studentIdnr, studentName, login, branchName, programName, courseCode, courseName, 
 credits, departmentName, capacity, classification, grade, position)
 
-studentIdnr -> studentName login
-courseCode -> courseName credits departmentName
-login -> studentIdnr studentName 
 
-studentIdnr
+studentIdnr -> studentName login programName (branchName)
+courseCode -> courseName credits departmentName (capacity) (classification)
+studentIdnr courseCode -> (grade) (position)
+login courseCode -> (grade) (position)
 
+
+--------------------FDs---------------
+studentIdnr -> studentName login programName (branchName)
+courseCode -> courseName credits departmentName (capacity)
+studentIdnr courseCode -> (grade) (position)
+position courseCode -> studentIdnr ???
+
+-----------------Closures-------------
+{studentIdnr}+ = {studentIdnr, studentName, login, programName, branchName}
+{courseCode}+ = {courseCode, courseName, credits, departmentName, capacity}
+
+{studentIdnr, courseCode}+ = {studentIdnr, courseCode, studentName, login, programName, 
+branchName, courseName, credits, departmentName, capacity,
+grade, position}
+
+{position, courseCode}+ = {position, courseCode, courseName, credits, departmentName, 
+capacity, studentIdnr, grade, studentName, login, programName, branchName}
+
+
+----- OLD BCNF Decomposition------
+
+CHOOSE studentIdnr
+R1 = (_studentIdnr_, studentName, login, programName, branchName) - DONE - Students
+R2 = (studentIdnr, courseCode, courseName, credits, departmentName, 
+capacity, classification, grade, position)
+
+
+CHOOSE courseCode in R2
+R21 = (_courseCode_, courseName, credits, departmentName, capacity) - Courses
+R22 = (_courseCode_, _studentIdnr_, classification, grade, position)
+
+
+---------------NEW BCNF Decomposition -----------------
+CHOOSE courseCode
+R1 = (_courseCode_, courseName, credits, departmentName, capacity) - DONE
+R2 = (courseCode, studentIdnr, studentName, login, programName, 
+branchName, classification, grade, position)
+
+CHOOSE studentIdnr
+R21 = (_studentIdnr_, studentName, login, programName, branchName) - DONE
+R22 = (studentIdnr, courseCode, classification, grade, position)
+
+CHOOSE studentIdnr courseCode
+R221 = (_studentIdnr_, _courseCode_, grade, position) - DONE
+R222 = (_studentIdnr_, _courseCode_, classification) - continue in 4NF
+
+
+
+-------Multivalued Dependecy (MVD)-----------
+courseCode ->> classification ???
+
+------- 4NF Decomposition ------
+
+R2221 = (courseCode, classification) - DONE
+R2222 = (studentIdnr, courseCode)
