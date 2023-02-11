@@ -1,0 +1,10 @@
+Functional Dependencies
+Domain: D(studentIdnr, studentName, login, branchName, programName, courseCode, courseName, 
+credits, departmentName, capacity, classification, grade, position)
+
+studentIdnr -> studentName login
+courseCode -> courseName credits departmentName
+login -> studentIdnr studentName 
+
+studentIdnr
+
