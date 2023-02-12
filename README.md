@@ -29,7 +29,8 @@
 * all student get the same amount of credits for passing the same course
 * some courses are limited to a certain number of students
 * courses are classified into different subjects (math, seminar, research)
-* not all courses are classified, some have multiple classifications
+* not all courses are classified
+* some course have multiple classifications
 * database need to allow adding new classifications
 * some courses prerequisites
 

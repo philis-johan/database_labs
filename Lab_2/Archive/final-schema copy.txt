@@ -1,0 +1,15 @@
+
+Courses(_courseCode_, courseName, credits, departmentName, capacity)
+
+Students(_studentIdnr_, studentName, login, programName, branchName)
+    UNIQUE login
+
+Taken/WaitingList(_studentIdnr_, _courseCode_, grade, position)
+    studentIdnr -> Students.studentIdnr
+    courseCode -> Courses.courseCode
+
+CourseClassifications(_courseCode_, _classification_)
+    courseCode -> Courses.courseCode
+
+
+Registered(studentIdnr, courseCode)
