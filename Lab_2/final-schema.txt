@@ -54,6 +54,7 @@ Taken(_student_, _course_, grade)
 WaitingList(_student_, _course_, position)
  student → Students.idnr
  course → Limitedcourses.code
+ UNIQUE (course, position)
 
 Prerequisites(_prereqCourse_, _targetCourse_)
 _prereqCourse_ -> Courses.code

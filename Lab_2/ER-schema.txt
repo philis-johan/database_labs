@@ -22,7 +22,7 @@ StudentBranches(_student_, branch, program)
 
 Classifications(_name_)
 
-Classified(_course_, classification)
+Classified(_course_, _classification_)
  course → courses.code
  classification → Classifications.name)
 
