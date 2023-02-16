@@ -6,8 +6,8 @@
 studentIdnr -> studentName login programName (branchName)
 courseCode -> courseName credits departmentName (capacity)
 studentIdnr courseCode -> (grade) (position)
-position courseCode -> studentIdnr ???
-login -> studentIdnr ???
+position courseCode -> studentIdnr
+login -> studentIdnr
 
 -----------------Closures-------------
 

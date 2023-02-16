@@ -1,24 +1,22 @@
--- DELETE;
 
--- DROP TABLE IF EXISTS Programs CASCADE;
+DROP TABLE IF EXISTS Programs CASCADE;
 CREATE TABLE Programs(
     name TEXT,
     abbreviation TEXT NOT NULL,
     PRIMARY KEY (name)
     );
 
--- DROP TABLE IF EXISTS Students CASCADE;
+DROP TABLE IF EXISTS Students CASCADE;
 CREATE TABLE Students(
     idnr CHAR(10) PRIMARY KEY,
     name TEXT NOT NULL,
     login TEXT NOT NULL UNIQUE,
     program TEXT NOT NULL,
-    FOREIGN KEY (program) REFERENCES Programs(name)
+    FOREIGN KEY (program) REFERENCES Programs(name),
+    UNIQUE (idnr, program)
     );
 
-
-
--- DROP TABLE IF EXISTS Branches CASCADE;
+DROP TABLE IF EXISTS Branches CASCADE;
 CREATE TABLE Branches(
     name TEXT,
     program TEXT,
@@ -26,15 +24,15 @@ CREATE TABLE Branches(
     FOREIGN KEY (program) REFERENCES Programs(name)
     );
 
--- DROP TABLE IF EXISTS Departments CASCADE;
+DROP TABLE IF EXISTS Departments CASCADE;
 CREATE TABLE Departments(
     name TEXT,
-    abbreviation TEXT NOT NULL UNIQUE,
+    abbreviation TEXT NOT NULL,
     PRIMARY KEY (name)
     );
 
 
--- DROP TABLE IF EXISTS Courses CASCADE;
+DROP TABLE IF EXISTS Courses CASCADE;
 CREATE TABLE Courses(
     code CHAR(6) PRIMARY KEY,
     name TEXT NOT NULL,
@@ -44,32 +42,28 @@ CREATE TABLE Courses(
     );
 
 
--- DROP TABLE IF EXISTS LimitedCourses CASCADE;
+DROP TABLE IF EXISTS LimitedCourses CASCADE;
 CREATE TABLE LimitedCourses(
     code CHAR(6) PRIMARY KEY,
     capacity FLOAT NOT NULL CHECK (capacity >= 0),
     FOREIGN KEY (code) REFERENCES Courses(code)
     );
 
--- DROP TABLE IF EXISTS StudentBranches CASCADE;
+DROP TABLE IF EXISTS StudentBranches CASCADE;
 CREATE TABLE StudentBranches(
     student TEXT PRIMARY KEY,
     branch TEXT NOT NULL,
     program TEXT NOT NULL,
-    FOREIGN KEY (student) REFERENCES Students(idnr),
-    FOREIGN KEY (branch, program) REFERENCES Branches(name, program),
-    -- FOREIGN KEY (program) REFERENCES Students(program)
-    -- CONSTRAINT a CHECK program = (SELECT program 
-    -- FROM Students WHERE Students.student = StudentBranches.student)
-    -- program = SELECT Students.program FROM Students WHERE student = Students.idnr
+    FOREIGN KEY (student, program) REFERENCES Students(idnr, program),
+    FOREIGN KEY (branch, program) REFERENCES Branches(name, program)
     );
 
--- DROP TABLE IF EXISTS Classifications CASCADE;
+DROP TABLE IF EXISTS Classifications CASCADE;
 CREATE TABLE Classifications(
     name TEXT PRIMARY KEY
     );
     
--- DROP TABLE IF EXISTS Classified CASCADE;
+DROP TABLE IF EXISTS Classified CASCADE;
 CREATE TABLE Classified(
     course CHAR(6) NOT NULL,
     classification TEXT NOT NULL,
@@ -78,7 +72,7 @@ CREATE TABLE Classified(
     PRIMARY KEY (course, classification)
     );
 
--- DROP TABLE IF EXISTS DepartmentProgram CASCADE;
+DROP TABLE IF EXISTS DepartmentProgram CASCADE;
 CREATE TABLE DepartmentProgram(
     department TEXT NOT NULL,
     program TEXT NOT NULL,
@@ -87,7 +81,7 @@ CREATE TABLE DepartmentProgram(
     PRIMARY KEY (department, program)
     );
 
--- DROP TABLE IF EXISTS MandatoryProgram CASCADE;
+DROP TABLE IF EXISTS MandatoryProgram CASCADE;
 CREATE TABLE MandatoryProgram(
     course CHAR(6) NOT NULL,
     program TEXT NOT NULL,
@@ -95,7 +89,7 @@ CREATE TABLE MandatoryProgram(
     PRIMARY KEY (course, program)
     );
 
--- DROP TABLE IF EXISTS MandatoryBranch CASCADE;
+DROP TABLE IF EXISTS MandatoryBranch CASCADE;
 CREATE TABLE MandatoryBranch(
     course CHAR(6) NOT NULL,
     branch TEXT NOT NULL,
@@ -105,7 +99,7 @@ CREATE TABLE MandatoryBranch(
     PRIMARY KEY (course, branch, program)
     );
 
--- DROP TABLE IF EXISTS RecommendedBranch CASCADE;
+DROP TABLE IF EXISTS RecommendedBranch CASCADE;
 CREATE TABLE RecommendedBranch(
     course CHAR(6) NOT NULL,
     branch TEXT NOT NULL,
@@ -115,7 +109,7 @@ CREATE TABLE RecommendedBranch(
     PRIMARY KEY (course, branch, program)
     );
 
--- DROP TABLE IF EXISTS Registered CASCADE;
+DROP TABLE IF EXISTS Registered CASCADE;
 CREATE TABLE Registered(
     student CHAR(10) NOT NULL,
     course CHAR(6) NOT NULL,
@@ -124,7 +118,7 @@ CREATE TABLE Registered(
     PRIMARY KEY (student, course)
     );
 
--- DROP TABLE IF EXISTS Taken CASCADE;
+DROP TABLE IF EXISTS Taken CASCADE;
 CREATE TABLE Taken(
     student CHAR(10) NOT NULL,
     course CHAR(6) NOT NULL,
@@ -135,15 +129,19 @@ CREATE TABLE Taken(
     PRIMARY KEY (student, course)
 );
 
--- DROP TABLE IF EXISTS WaitingList CASCADE;
+DROP TABLE IF EXISTS WaitingList CASCADE;
 CREATE TABLE WaitingList(
     student CHAR(10) NOT NULL,
     course CHAR(6) NOT NULL,
     position SERIAL NOT NULL,
     FOREIGN KEY (student) REFERENCES Students(idnr),
     FOREIGN KEY (course) REFERENCES LimitedCourses(code),
-    PRIMARY KEY (student, course)
+    PRIMARY KEY (student, course),
+    UNIQUE (course, position)
 );
+
+
+
 
 
 
