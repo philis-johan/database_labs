@@ -3,6 +3,7 @@
 Students(_idnr_, name, login, program)
     program -> programs.name
     UNIQUE login
+    UNIQUE (idnr, program)
 
 Programs(_name_, abbreviation)
 
@@ -10,7 +11,6 @@ Branches(_name_, _program_)
     program -> programs.name
 
 Departments(_name_, abbreviation)
-    UNIQUE abbreviation
 
 Courses(_code_, name, credits, department)
     department -> Departments.name
@@ -19,9 +19,8 @@ LimitedCourses(_code_, capacity)
  code → Courses.code
 
 StudentBranches(_student_, branch, program)
- student → Students.idnr
+ (student, program) → Students.(idnr, program)
  (branch, program) → Branches.(name, program)
- CONSTRAINT Students.program = StudentBranches.program 
 
 Classifications(_name_)
 
