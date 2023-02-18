@@ -33,11 +33,14 @@ CREATE FUNCTION register_student() RETURNS trigger AS $register_student$
         (SELECT Taken.course FROM Taken WHERE Taken.student = NEW.student)) IS NOT NULL THEN
             RAISE EXCEPTION 'Student % is missing prerequisites.', NEW.student;
         END IF;
-        -- IF (SELECT COUNT(*) AS numStudents FROM Registered WHERE Registered.course = NEW.course)
-
         
+        IF (SELECT COUNT(*) AS numStudents FROM Registered WHERE Registered.course = NEW.course) >= 
+        (SELECT capacity FROM LimitedCourses WHERE LimitedCourses.code = NEW.course) THEN
+            INSERT INTO WaitingList VALUES (NEW.student, NEW.course, 3); -- vilken position?
+        END IF;
 
         INSERT INTO Registered VALUES (NEW.student, NEW.course);
+        RETURN NEW;
     END;
 $register_student$ LANGUAGE plpgsql;
 
@@ -45,9 +48,8 @@ DROP TRIGGER IF EXISTS register_student ON Registrations;
 CREATE TRIGGER register_student INSTEAD OF INSERT ON Registrations
 FOR EACH ROW EXECUTE FUNCTION register_student();
 
-
--- INSERT INTO Registrations VALUES ('4444444444','CCC111','registered'); -- Testar prerequisite condition not met
-INSERT INTO Registrations VALUES ('3333333333','CCC222','registered');
+INSERT INTO Registrations VALUES ('6666666666','CCC444','registered');
+INSERT INTO Registrations VALUES ('4444444444','CCC222','registered');
 
 
 
