@@ -36,11 +36,16 @@ CREATE FUNCTION register_student() RETURNS trigger AS $register_student$
         
         IF (SELECT COUNT(*) AS numStudents FROM Registered WHERE Registered.course = NEW.course) >= 
         (SELECT capacity FROM LimitedCourses WHERE LimitedCourses.code = NEW.course) THEN
-            INSERT INTO WaitingList VALUES (NEW.student, NEW.course, 3); -- vilken position?
+            INSERT INTO
+            (SELECT * FROM WaitingList WHERE course = NEW.course) CourseWaitingList 
+            VALUES (NEW.student, NEW.course);
+
+            -- INSERT INTO WaitingList VALUES (NEW.student, NEW.course, 3); -- vilken position?
+            Return NULL;
         END IF;
 
         INSERT INTO Registered VALUES (NEW.student, NEW.course);
-        RETURN NEW;
+        RETURN NEW; -- must return something
     END;
 $register_student$ LANGUAGE plpgsql;
 
