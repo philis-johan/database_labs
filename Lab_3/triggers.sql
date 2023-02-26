@@ -56,9 +56,6 @@ CREATE FUNCTION unregister_student() RETURNS trigger AS $unregister_student$
             -- AND WaitingList.course = OLD.course);
             -- DELETE FROM WaitingList WHERE WaitingList.student = OLD.student AND WaitingList.course = OLD.course;
 
-            -- DROP MATERIALIZED VIEW IF EXISTS OldPosition;
-            -- CREATE MATERIALIZED VIEW OldPosition AS 
-            -- SELECT WaitingList.position AS old_position FROM WaitingList WHERE course = OLD.course AND student = OLD.student;
 
             DROP TABLE IF EXISTS OldPosition;
             CREATE TABLE OldPosition (
@@ -82,6 +79,3 @@ DROP TRIGGER IF EXISTS unregister_student ON Registrations;
 CREATE TRIGGER unregister_student INSTEAD OF DELETE ON Registrations
 FOR EACH ROW EXECUTE FUNCTION unregister_student();
 
--- INSERT INTO Registered (SELECT student, course FROM WaitingList 
--- WHERE course = 'CCC222' AND position = 1)
--- ;
