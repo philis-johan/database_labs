@@ -14,50 +14,10 @@ CREATE OR REPLACE VIEW PassedCourses AS (
     SELECT student, course, credits FROM FinishedCourses WHERE grade != 'U'
 );
 
-
 CREATE OR REPLACE VIEW Registrations AS (
     (SELECT student, course, 'registered' AS status FROM Registered) UNION
     (SELECT student, course, 'waiting' AS status FROM WaitingList)
 );
-
-DROP FUNCTION IF EXISTS register_student CASCADE;
-CREATE FUNCTION register_student() RETURNS trigger AS $register_student$
-    BEGIN
-        IF NEW.student IN (SELECT student FROM Registered) THEN
-            RAISE EXCEPTION 'Student % already registered to course %.', NEW.student, NEW.course;
-        END IF;
-        IF NEW.student IN (SELECT student FROM WaitingList) THEN
-            RAISE EXCEPTION 'Student % already in the waiting list for course %.', NEW.student, NEW.course;
-        END IF;
-        IF ((SELECT prereqCourse FROM Prerequisites WHERE targetCourse = NEW.course) EXCEPT
-        (SELECT Taken.course FROM Taken WHERE Taken.student = NEW.student)) IS NOT NULL THEN
-            RAISE EXCEPTION 'Student % is missing prerequisites.', NEW.student;
-        END IF;
-        
-        IF (SELECT COUNT(*) AS numStudents FROM Registered WHERE Registered.course = NEW.course) >= 
-        (SELECT capacity FROM LimitedCourses WHERE LimitedCourses.code = NEW.course) THEN
-            INSERT INTO
-            (SELECT * FROM WaitingList WHERE course = NEW.course) CourseWaitingList 
-            VALUES (NEW.student, NEW.course);
-
-            -- INSERT INTO WaitingList VALUES (NEW.student, NEW.course, 3); -- vilken position?
-            Return NULL;
-        END IF;
-
-        INSERT INTO Registered VALUES (NEW.student, NEW.course);
-        RETURN NEW; -- must return something
-    END;
-$register_student$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS register_student ON Registrations;
-CREATE TRIGGER register_student INSTEAD OF INSERT ON Registrations
-FOR EACH ROW EXECUTE FUNCTION register_student();
-
-INSERT INTO Registrations VALUES ('6666666666','CCC444','registered');
-INSERT INTO Registrations VALUES ('4444444444','CCC222','registered');
-
-
-
 
 
 DROP VIEW IF EXISTS UnreadMandatory;
@@ -136,9 +96,6 @@ CREATE OR REPLACE VIEW PathToGraduation AS (
     OR t7.recommendedCredits < 10)
 );
 
-CREATE OR REPLACE VIEW CourseQueuePositions AS (
-    SELECT course, student, position AS place FROM WaitingList
-);
  
 
 
