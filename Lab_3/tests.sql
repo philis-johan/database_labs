@@ -1,6 +1,6 @@
 -- TEST #1: Register to an unlimited course.
 -- EXPECTED OUTCOME: Pass
-INSERT INTO Registrations VALUES ('5555555555', 'CCC444', 'registered');
+INSERT INTO Registrations VALUES ('5555555555', 'CCC555', 'registered');
 
 -- TEST #2: Register an already registered student.
 -- EXPECTED OUTCOME: Fail
@@ -12,7 +12,7 @@ INSERT INTO Registrations VALUES ('3333333333','CCC222', 'registered');
 
 -- TEST #4: Register a student that misses prerequisites.
 -- EXPECTED OUTCOME: Fail
-INSERT INTO Registrations VALUES ('4444444444','CCC111','registered');
+INSERT INTO Registrations VALUES ('4444444444','CCC777','registered');
 
 -- TEST #5: Unregister from an unlimited course.
 -- EXPECTED OUTCOME: Pass
@@ -34,3 +34,17 @@ DELETE FROM Registrations WHERE course = 'CCC333' AND student = '2222222222';
 -- TEST #8: Unregister from an overfull course with a waiting list 
 -- EXPECTED OUTCOME: Pass
 DELETE FROM Registrations WHERE course = 'CCC222' AND student = '5555555555';
+
+-- TEST #9: Register student to a limited course
+-- EXPECTED OUTCOME: Pass
+INSERT INTO Registrations VALUES ('6666666666', 'CCC666', 'registered');
+
+-- TEST #10: Register student to an already passed course
+-- EXPECTED OUTCOME: Fail
+INSERT INTO Registrations VALUES ('4444444444','CCC111', 'registered');
+
+-- TEST #11: Successfully register student to a course with pre-requisites
+-- EXPECTED OUTCOME: Pass
+INSERT INTO Registrations VALUES ('3333333333','CCC777', 'registered');
+
+

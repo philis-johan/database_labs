@@ -6,6 +6,9 @@ CREATE OR REPLACE VIEW CourseQueuePositions AS (
 DROP FUNCTION IF EXISTS register_student CASCADE;
 CREATE FUNCTION register_student() RETURNS trigger AS $register_student$
     BEGIN
+        IF NEW.course IN (SELECT course FROM PassedCourses WHERE student = NEW.student AND course = NEW.course) THEN
+            RAISE EXCEPTION 'Student % has already passed course %.', NEW.student, NEW.course;
+        END IF;
         IF (NEW.student, NEW.course) IN (SELECT student, course FROM Registered) THEN
             RAISE EXCEPTION 'Student % already registered to course %.', NEW.student, NEW.course;
         END IF;
@@ -16,6 +19,7 @@ CREATE FUNCTION register_student() RETURNS trigger AS $register_student$
         (SELECT Taken.course FROM Taken WHERE Taken.student = NEW.student)) IS NOT NULL THEN
             RAISE EXCEPTION 'Student % is missing prerequisites.', NEW.student;
         END IF;
+        
         
         IF (SELECT COUNT(*) AS numStudents FROM Registered WHERE Registered.course = NEW.course) >= 
         (SELECT capacity FROM LimitedCourses WHERE LimitedCourses.code = NEW.course) THEN
