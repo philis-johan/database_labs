@@ -1,0 +1,27 @@
+{
+    "$schema": "./information_schema.json",
+    "student": "1111111111",
+    "name": "Bosse Bonde-Bus",
+    "login": "BosseBB@chalm",
+    "program": "TM",
+    "branch": "",
+    "finished": [
+        {
+        "code": "CCC111", 
+        "course": "C Kunskap",
+        "credits": 3000,
+        "grade": "5"}],
+    "registered": [
+        {"code": "CCC222",
+        "course": "D Kunskap",
+        "status": "registered"},
+         {"code": "CCC333",
+         "course": "E Kunskap",
+         "status": "waiting",
+         "position": 5}],
+    "seminarCourses": 3,
+    "mathCredits": 14,
+    "researchCredits": 1592,
+    "totalCredits": 653,
+    "canGraduate": false
+}
