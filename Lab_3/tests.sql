@@ -33,7 +33,7 @@ DELETE FROM Registrations WHERE course = 'CCC333' AND student = '2222222222';
 
 -- TEST #8: Unregister from an overfull course with a waiting list 
 -- EXPECTED OUTCOME: Pass
-DELETE FROM Registrations WHERE course = 'CCC222' AND student = '5555555555';
+DELETE FROM Registrations WHERE course = 'CCC222' AND student = '2222222222';
 
 -- TEST #9: Register student to a limited course
 -- EXPECTED OUTCOME: Pass
