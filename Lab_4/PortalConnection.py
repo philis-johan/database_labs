@@ -17,44 +17,115 @@ class PortalConnection:
         with open(file_name) as f:
             return json.load(f)
 
-    def validate_json(self,data, schema):
-        try:
-            jsonschema.validate(instance=data, schema=schema)
-        except jsonschema.exceptions.ValidationError as err:
-            print(err)
-            return False
-        return True
+    def validate_json(self, data: dict, schema: dict):
+        jsonschema.validate(instance=data, schema=schema)
 
     def execute_sql(self, cur, query, attributes):
         cur.execute(query, attributes)
 
     def getInfo(self,student):
       with self.conn.cursor() as cur:
-        # Here's a start of the code for this part
-        BasicInformation_query = ("""
-                SELECT jsonb_build_object(
-                    'student', s.idnr,
-                    'name', s.name,
-                    'login', s.login,
-                    'program', s.program,
-                    'branch', s.branch
-                ) :: TEXT
-                FROM BasicInformation AS s
-                WHERE s.idnr = %s;
-                """, (student,))
         
-        # FinishedCourses_query = """
-        #         SELECT jsonb_build_object(
-        #             "finished": [
-        #             SELECT jsonb_build_object(
-        #             :: TEXT 
-        #             FROM F
-        #             )
-        #             ]
-        #         ) :: TEXT
-        #         FROM FinishedCourses AS s
-        #         WHERE s.student = %s;
-        #         """
+        BasicInformation_query = ("""
+            SELECT jsonb_build_object(
+                'student', s.idnr,
+                'name', s.name,
+                'login', s.login,
+                'program', s.program,
+                'branch', s.branch
+            ) :: TEXT
+            FROM BasicInformation AS s
+            WHERE s.idnr = %s;
+            """, (student,))
+        
+
+        FinishedCourses_query = ("""
+            SELECT COALESCE(
+                jsonb_build_object(
+                    'finished', (
+                        jsonb_agg(
+                            jsonb_build_object(
+                                'code', c.code,
+                                'course', c.name,
+                                'credits', f.credits,
+                                'grade', f.grade
+                            )
+                        )
+                    )
+                ),
+                jsonb_build_object(
+                    'finished', jsonb_build_array()
+                )
+            ) :: TEXT
+            FROM FinishedCourses AS f
+            INNER JOIN Courses AS c
+            ON c.code = f.course
+            WHERE student = %s
+            ;
+        """, (student,))
+        
+        FinishedCourses_query2 = ("""
+            SELECT COALESCE(
+                jsonb_agg(
+                    jsonb_build_object(
+                        'code', c.code,
+                        'course', c.name,
+                        'credits', f.credits,
+                        'grade', f.grade
+                    )
+                ),
+                jsonb_build_array()
+            ) :: TEXT
+            FROM FinishedCourses AS f
+            INNER JOIN Courses AS c
+            ON c.code = f.course
+            WHERE student = %s
+            ;
+        """, (student,))
+
+        # self.execute_sql(cur, FinishedCourses_query2[0], FinishedCourses_query2[1])
+        # print(cur.fetchone())
+
+        Registrations_query = ("""
+            SELECT jsonb_build_object(
+                'registered', jsonb_agg(
+                    jsonb_build_object(
+                        'code', c.code,
+                        'course', c.name,
+                        'status', r.status,
+                        'position', w.position
+                        )
+                    )   
+                ) :: TEXT
+            FROM Registrations r
+            INNER JOIN Courses AS c
+            ON c.code = r.course
+            LEFT JOIN WaitingList AS w
+            ON r.student = w.student AND r.course = w.course
+            WHERE r.student = %s
+            ;
+        """, (student,))
+        Registrations_query2 = ("""
+            SELECT COALESCE(
+                jsonb_agg(
+                    jsonb_build_object(
+                        'code', c.code,
+                        'course', c.name,
+                        'status', r.status,
+                        'position', w.position
+                    )
+                ),
+                jsonb_build_array()
+            ) :: TEXT
+            FROM Registrations r
+            INNER JOIN Courses AS c
+            ON c.code = r.course
+            LEFT JOIN WaitingList AS w
+            ON r.student = w.student AND r.course = w.course
+            WHERE r.student = %s
+            ;
+        """, (student,))
+
         PathToGraduation_query = ("""
                 SELECT jsonb_build_object(
                     'seminarCourses', s.seminarCourses,
@@ -66,18 +137,32 @@ class PortalConnection:
                 FROM PathToGraduation AS s
                 WHERE s.student = %s;
                 """, (student,))
-        # cur.execute(sql, (student,))
-        query_list = [BasicInformation_query, PathToGraduation_query]
-        # self.execute_sql(cur, BasicInformation_query, (student,))
+
+        # query_list = [BasicInformation_query, FinishedCourses_query2, Registrations_query2, PathToGraduation_query]
+        queries = {"BasicInformation": BasicInformation_query, 
+                      "FinishedCourses": FinishedCourses_query2, 
+                      "Registrations": Registrations_query2, 
+                      "PathToGraduation": PathToGraduation_query}
         student_info = dict()
-        for query in query_list:
+        for query_name, query in queries.items():
             self.execute_sql(cur, query=query[0], attributes=query[1])
-            res = cur.fetchone()
-            student_info.update(json.loads(res[0]))
+            # res = cur.fetchone() if isinstance(cur.fetchone, dict) else {"finished": []}
+            data = json.loads(cur.fetchone()[0])
+            if query_name == "FinishedCourses":
+                info = {'finished': data}
+            elif query_name == "Registrations":
+                info = {'registered': data}
+            else:
+                info = data
+
+            # student_info.update(json.loads(res[0]))
+            student_info.update(info)
         
-        
+        # print(student_info)
+        schema = self.load_json(VALIDATION_SCHEMA_FILE)
+        self.validate_json(student_info, schema)
         if student_info:
-            return student_info
+            return json.dumps(student_info)
         else:
             return """{"student":"Not found :("}"""
 

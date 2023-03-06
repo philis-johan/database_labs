@@ -28,5 +28,14 @@ if __name__ == "__main__":
     print(c.unregister("6666666666", "CCC555")); 
     print(c.getInfo("6666666666"))
     pause()
+
+    print("Test 4:")
+    print(c.getInfo("4444444444"))
+    pause()
+
+    print("Test sju:")
+    print(c.register("7777777777", "CCC444")); 
+    print(c.getInfo("7777777777"))
+    pause()
     
     
