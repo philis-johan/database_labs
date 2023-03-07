@@ -3,6 +3,7 @@ import json
 import jsonschema
 
 VALIDATION_SCHEMA_FILE = "information_schema.json"
+SECURE_EXECUTION = False
 
 class PortalConnection:
     def __init__(self):
@@ -135,7 +136,8 @@ class PortalConnection:
                     'canGraduate', s.qualified
                 ) :: TEXT
                 FROM PathToGraduation AS s
-                WHERE s.student = %s;
+                WHERE s.student = %s
+                ;
                 """, (student,))
 
         # query_list = [BasicInformation_query, FinishedCourses_query2, Registrations_query2, PathToGraduation_query]
@@ -173,33 +175,66 @@ class PortalConnection:
                     INSERT INTO Registrations VALUES (
                         %s,
                         %s
-                        )
+                        );
                 """
                 cur.execute(sql, (student, courseCode))
+                return '{"success":true}'
         except psycopg2.Error as e:
             message = getError(e)
             return '{"success":false, "error": "'+message+'"}'
 
-    def check_registered_or_waiting(self, student, courseCode):
+    def secure_check_registered_or_waiting(self, student, courseCode):
         with self.conn.cursor() as cur:
             sql = """
                 SELECT student, course FROM Registrations 
                 WHERE student = %s AND course = %s
+                ;
+            """
+            cur.execute(sql, (student, courseCode))
+            return cur.fetchone() is not None
+    
+    def insecure_check_registered_or_waiting(self, student, courseCode):
+        with self.conn.cursor() as cur:
+            sql = f"""
+                SELECT student, course FROM Registrations 
+                WHERE student = '{student}' AND course = '{courseCode}'
+                ;
             """
             cur.execute(sql, (student, courseCode))
             return cur.fetchone() is not None
 
+    def secure_delete(self, cur, arguments):
+        sql = """
+            DELETE FROM Registrations WHERE 
+                student = %s AND
+                course = %s
+                ;
+        """
+        cur.execute(sql, arguments)
+
+    def insecure_delete(self, cur, arguments):
+        sql = f"""
+            DELETE FROM Registrations WHERE 
+                student = '{arguments[0]}' AND
+                course = '{arguments[1]}'
+                ;
+        """
+        cur.execute(sql)
+
+
     def unregister(self, student, courseCode):
         try:
             with self.conn.cursor() as cur:
-                if not self.check_registered_or_waiting(student, courseCode):
-                    return '{"success":false, "error": "Student not registered or in waiting list."}'
-                sql = """
-                    DELETE FROM Registrations WHERE 
-                        'student' = %s AND
-                        'course' = %s
-                """
-                cur.execute(sql, (student, courseCode))
+                # if not self.secure_check_registered_or_waiting(student, courseCode):
+                #     return '{"success":false, "error": "Student not registered or in waiting list."}'
+                if SECURE_EXECUTION:
+                    if not self.secure_check_registered_or_waiting(student, courseCode):
+                        return '{"success":false, "error": "Student not registered or in waiting list."}'
+                    self.secure_delete(cur, (student, courseCode))
+                else:
+                    if not self.insecure_check_registered_or_waiting(student, courseCode):
+                        return '{"success":false, "error": "Student not registered or in waiting list."}'
+                    self.insecure_delete(cur, (student, courseCode))
                 return '{"success":true}'
         except psycopg2.Error as e:
             message = getError(e)

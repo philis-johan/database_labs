@@ -162,6 +162,7 @@ INSERT INTO Students VALUES ('5555555555','Nx','ls5','Prog2');
 INSERT INTO Students VALUES ('6666666666','Nx','ls6','Prog2');
 INSERT INTO Students VALUES ('7777777777','sju','ls7','Prog2');
 
+
 INSERT INTO Branches VALUES ('B1','Prog1');
 INSERT INTO Branches VALUES ('B2','Prog1');
 INSERT INTO Branches VALUES ('B1','Prog2');
