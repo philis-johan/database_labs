@@ -1,6 +1,5 @@
 #Dia filer skräp
 *.dia~
-*.png
 *.autosave
 
 # Compiled class file

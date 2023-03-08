@@ -4,8 +4,9 @@ import json
 
 def setup(c):
   with c.conn.cursor() as cur:
-      cur.execute(open("../Lab_3/setup.sql", "r").read())
-      cur.execute(open("../Lab_3/triggers.sql", "r").read())
+      cur.execute(open("./master_setup.sql", "r").read())
+      # cur.execute(open("../Lab_3/setup.sql", "r").read())
+      # cur.execute(open("../Lab_3/triggers.sql", "r").read())
 
 def pause():
   input("Press Enter to continue...")
