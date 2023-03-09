@@ -3,7 +3,7 @@ import json
 import jsonschema
 
 VALIDATION_SCHEMA_FILE = "information_schema.json"
-SECURE_EXECUTION = False
+SECURE_EXECUTION = True
 
 class PortalConnection:
     def __init__(self):

@@ -1,12 +1,12 @@
 
-DROP TABLE IF EXISTS Programs CASCADE;
+-- Drop TABLE IF EXISTS Programs CASCADE;
 CREATE TABLE Programs(
     name TEXT,
     abbreviation TEXT NOT NULL,
     PRIMARY KEY (name)
     );
 
-DROP TABLE IF EXISTS Students CASCADE;
+-- Drop TABLE IF EXISTS Students CASCADE;
 CREATE TABLE Students(
     idnr CHAR(10) PRIMARY KEY,
     name TEXT NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE Students(
     UNIQUE (idnr, program)
     );
 
-DROP TABLE IF EXISTS Branches CASCADE;
+-- Drop TABLE IF EXISTS Branches CASCADE;
 CREATE TABLE Branches(
     name TEXT,
     program TEXT,
@@ -24,7 +24,7 @@ CREATE TABLE Branches(
     FOREIGN KEY (program) REFERENCES Programs(name)
     );
 
-DROP TABLE IF EXISTS Departments CASCADE;
+-- Drop TABLE IF EXISTS Departments CASCADE;
 CREATE TABLE Departments(
     name TEXT,
     abbreviation TEXT NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE Departments(
     );
 
 
-DROP TABLE IF EXISTS Courses CASCADE;
+-- Drop TABLE IF EXISTS Courses CASCADE;
 CREATE TABLE Courses(
     code CHAR(6) PRIMARY KEY,
     name TEXT NOT NULL,
@@ -42,14 +42,14 @@ CREATE TABLE Courses(
     );
 
 
-DROP TABLE IF EXISTS LimitedCourses CASCADE;
+-- Drop TABLE IF EXISTS LimitedCourses CASCADE;
 CREATE TABLE LimitedCourses(
     code CHAR(6) PRIMARY KEY,
     capacity FLOAT NOT NULL CHECK (capacity >= 0),
     FOREIGN KEY (code) REFERENCES Courses(code)
     );
 
-DROP TABLE IF EXISTS StudentBranches CASCADE;
+-- Drop TABLE IF EXISTS StudentBranches CASCADE;
 CREATE TABLE StudentBranches(
     student TEXT PRIMARY KEY,
     branch TEXT NOT NULL,
@@ -58,12 +58,12 @@ CREATE TABLE StudentBranches(
     FOREIGN KEY (branch, program) REFERENCES Branches(name, program)
     );
 
-DROP TABLE IF EXISTS Classifications CASCADE;
+-- Drop TABLE IF EXISTS Classifications CASCADE;
 CREATE TABLE Classifications(
     name TEXT PRIMARY KEY
     );
     
-DROP TABLE IF EXISTS Classified CASCADE;
+-- Drop TABLE IF EXISTS Classified CASCADE;
 CREATE TABLE Classified(
     course CHAR(6) NOT NULL,
     classification TEXT NOT NULL,
@@ -72,7 +72,7 @@ CREATE TABLE Classified(
     PRIMARY KEY (course, classification)
     );
 
-DROP TABLE IF EXISTS DepartmentPrograms CASCADE;
+-- Drop TABLE IF EXISTS DepartmentPrograms CASCADE;
 CREATE TABLE DepartmentPrograms(
     department TEXT NOT NULL,
     program TEXT NOT NULL,
@@ -81,7 +81,7 @@ CREATE TABLE DepartmentPrograms(
     PRIMARY KEY (department, program)
     );
 
-DROP TABLE IF EXISTS MandatoryProgram CASCADE;
+-- Drop TABLE IF EXISTS MandatoryProgram CASCADE;
 CREATE TABLE MandatoryProgram(
     course CHAR(6) NOT NULL,
     program TEXT NOT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE MandatoryProgram(
     PRIMARY KEY (course, program)
     );
 
-DROP TABLE IF EXISTS MandatoryBranch CASCADE;
+-- Drop TABLE IF EXISTS MandatoryBranch CASCADE;
 CREATE TABLE MandatoryBranch(
     course CHAR(6) NOT NULL,
     branch TEXT NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE MandatoryBranch(
     PRIMARY KEY (course, branch, program)
     );
 
-DROP TABLE IF EXISTS RecommendedBranch CASCADE;
+-- Drop TABLE IF EXISTS RecommendedBranch CASCADE;
 CREATE TABLE RecommendedBranch(
     course CHAR(6) NOT NULL,
     branch TEXT NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE RecommendedBranch(
     PRIMARY KEY (course, branch, program)
     );
 
-DROP TABLE IF EXISTS Registered CASCADE;
+-- Drop TABLE IF EXISTS Registered CASCADE;
 CREATE TABLE Registered(
     student CHAR(10) NOT NULL,
     course CHAR(6) NOT NULL,
@@ -118,7 +118,7 @@ CREATE TABLE Registered(
     PRIMARY KEY (student, course)
     );
 
-DROP TABLE IF EXISTS Taken CASCADE;
+-- Drop TABLE IF EXISTS Taken CASCADE;
 CREATE TABLE Taken(
     student CHAR(10) NOT NULL,
     course CHAR(6) NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE Taken(
     PRIMARY KEY (student, course)
 );
 
-DROP TABLE IF EXISTS WaitingList CASCADE;
+-- Drop TABLE IF EXISTS WaitingList CASCADE;
 CREATE TABLE WaitingList(
     student CHAR(10) NOT NULL,
     course CHAR(6) NOT NULL,
@@ -140,7 +140,7 @@ CREATE TABLE WaitingList(
     UNIQUE (course, position)
 );
 
-DROP TABLE IF EXISTS Prerequisites CASCADE;
+-- Drop TABLE IF EXISTS Prerequisites CASCADE;
 CREATE TABLE Prerequisites(
     targetCourse CHAR(6),
     prereqCourse CHAR(6),
@@ -249,7 +249,7 @@ CREATE OR REPLACE VIEW FinishedCourses AS (
     SELECT student, course, grade, Courses.credits as credits FROM Taken LEFT OUTER JOIN Courses ON Taken.course = Courses.code
 );
 
-DROP VIEW IF EXISTS PassedCourses;
+-- Drop VIEW IF EXISTS PassedCourses;
 CREATE OR REPLACE VIEW PassedCourses AS (
     SELECT student, course, credits FROM FinishedCourses WHERE grade != 'U'
 );
@@ -260,7 +260,7 @@ CREATE OR REPLACE VIEW Registrations AS (
 );
 
 
-DROP VIEW IF EXISTS UnreadMandatory;
+-- Drop VIEW IF EXISTS UnreadMandatory;
 CREATE OR REPLACE VIEW UnreadMandatory AS (
     SELECT Students.idnr AS student, MandatoryProgram.course FROM Students
     INNER JOIN MandatoryProgram ON Students.program = MandatoryProgram.program
@@ -344,7 +344,7 @@ CREATE OR REPLACE VIEW CourseQueuePositions AS (
     SELECT course, student, position AS place FROM WaitingList
 );
 
-DROP FUNCTION IF EXISTS register_student CASCADE;
+-- Drop FUNCTION IF EXISTS register_student CASCADE;
 CREATE FUNCTION register_student() RETURNS trigger AS $register_student$
     BEGIN
         IF NEW.course IN (SELECT course FROM PassedCourses WHERE student = NEW.student AND course = NEW.course) THEN
@@ -374,12 +374,12 @@ CREATE FUNCTION register_student() RETURNS trigger AS $register_student$
     END;
 $register_student$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS register_student ON Registrations;
+-- Drop TRIGGER IF EXISTS register_student ON Registrations;
 CREATE TRIGGER register_student INSTEAD OF INSERT ON Registrations
 FOR EACH ROW EXECUTE FUNCTION register_student();
 
 --------------------------------------------------
-DROP FUNCTION IF EXISTS unregister_student CASCADE;
+-- Drop FUNCTION IF EXISTS unregister_student CASCADE;
 CREATE FUNCTION unregister_student() RETURNS trigger AS $unregister_student$
     BEGIN
         IF OLD.status = 'registered' THEN
@@ -402,7 +402,7 @@ CREATE FUNCTION unregister_student() RETURNS trigger AS $unregister_student$
             -- DELETE FROM WaitingList WHERE WaitingList.student = OLD.student AND WaitingList.course = OLD.course;
 
 
-            DROP TABLE IF EXISTS OldPosition;
+            -- Drop TABLE IF EXISTS OldPosition;
             CREATE TABLE OldPosition (
                 old_position INT PRIMARY KEY
             );
@@ -420,7 +420,7 @@ CREATE FUNCTION unregister_student() RETURNS trigger AS $unregister_student$
     END;
 $unregister_student$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS unregister_student ON Registrations;
+-- Drop TRIGGER IF EXISTS unregister_student ON Registrations;
 CREATE TRIGGER unregister_student INSTEAD OF DELETE ON Registrations
 FOR EACH ROW EXECUTE FUNCTION unregister_student();
 
